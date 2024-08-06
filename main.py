@@ -54,9 +54,12 @@ def main():
     for i in range(0, cycles):
         pull_totals.append(len(multi_roll()))
 
+    plt.figure()
     df = pd.DataFrame(pull_totals, columns=['Pull'])
     df = df.sort_values(by='Pull')
-    df.Pull.value_counts()[df.Pull.unique()].plot(kind='bar')
+    df.Pull.value_counts()[df.Pull.unique()].plot(kind='bar', title='REVERSE: 1999 | Pulls Required to Acquire a 6*')
+    plt.ylabel('Occurences')
+    plt.xlabel('Pull #')
     plt.show()
 
 main()
