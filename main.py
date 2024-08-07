@@ -2,6 +2,7 @@ import random
 import warnings
 import matplotlib.pyplot as plt
 import pandas as pd
+from multiprocessing import Manager, Pool, freeze_support
 
 warnings.filterwarnings('ignore')
 
@@ -28,31 +29,35 @@ def adjust_weights(weights, adjustment):
     weights[0] = new_else_rate
     weights[1] = new_six_star_rate
 
-def multi_roll():
+def do_loop():
     character_pool = generate_character_pool()
     weights = generate_weights()
-    roll_results = []
     i = 1
     while i < 71:
         if i >= 60:
             adjust_weights(weights, rising_rate)
         if i == 70:
-            roll_results.append(character_pool[1])
+            roll_results = i
             break
         roll_result = single_roll(character_pool, weights)
         if roll_result == [character_pool[1]]:
-            roll_results.append(roll_result)
+            roll_results = i
             break
-        else:
-            roll_results.append(roll_result)
         i += 1
     return roll_results
 
+def multi_roll(cycles, processes):
+    iterations = list(range(0, cycles))
+
+    with Pool(processes=processes) as pool:
+        results = pool.starmap(do_loop, [() for i in iterations])
+
+    return results
+
 def main():
     cycles = int(input("How many pull cycles? "))
-    pull_totals = []
-    for i in range(0, cycles):
-        pull_totals.append(len(multi_roll()))
+    processes = int(input("How many threads to run? "))
+    pull_totals = multi_roll(cycles, processes)
 
     plt.figure()
     df = pd.DataFrame(pull_totals, columns=['Pull'])
@@ -62,4 +67,6 @@ def main():
     plt.xlabel('Pull #')
     plt.show()
 
-main()
+if __name__=="__main__":
+    freeze_support()
+    main()
